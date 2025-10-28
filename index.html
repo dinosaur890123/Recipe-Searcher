@@ -16,17 +16,38 @@
         <main>
             <form id="search-form">
                 <input type="text" id="search-input" placeholder="pasta, bread">
+                <div class="filter-container">
+                    <select id="diet-filter">
+                        <option value="">All Diets</option>
+                        <option value="Vegetarian">Vegetarian</option>
+                        <option value="Vegan">Vegan</option>
+                        <option value="Gluten Free">Gluten Free</option>
+                        <option value="Ketogenic">Ketogenic</option>
+                        <option value="Paleo">Paleo</option>
+                    </select>
+                    <select id="cuisine-filter">
+                        <option value="">All Cuisines</option>
+                        <option value="African">African</option>
+                        <option value="American">American</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="French">French</option>
+                        <option value="Indian">Indian</option>
+                        <option value="Italian">Italian</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Mexican">Mexican</option>
+                        <option value="Thai">Thai</option>
+                    </select>
+                </div>
                 <button type="submit" id="search-button">Search</button>
             </form>
             <div id="loading-spinner" class="hidden">
                 <div class="loader"></div>
             </div>
             <div id="error-message" class="hidden">
-                <p>Something went wrong :( Please try again.</p>
+                <p>Something went wrong. Please try again.</p>
             </div>
-            <div id="results-container">
-                
-            </div>
+            <div id="results-container"></div>
+            <button id="load-more-button" class="hidden">Load More</button>
         </main>
     </div>
 </body>

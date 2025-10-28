@@ -48,7 +48,7 @@ header p {
     background-color: #0056b3;
 }
 #search-button:disabled {
-    background-color: #aaa;
+    background-color: #5f5555;
     cursor: not-allowed;
 }
 .hidden {
@@ -125,4 +125,25 @@ header p {
 }
 .recipe-link:hover {
     background-color: #cce4ff;
+}
+#load-more-button {
+    display: block;
+    width: 200px;
+    margin: 30px auto 0;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: #28a745;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#load-more-button:hover {
+    background-color: #218838;
+}
+#load-more-button:disabled {
+    background-color: #b1aaaa;
+    cursor: not-allowed;
 }
