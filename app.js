@@ -199,7 +199,7 @@ function closeModal() {
 }
 function fetchRecipeDetails(id) {
     return __awaiter(this, void 0, void 0, function () {
-        var apiUrl, response, data, error_2;
+        var apiUrl, response, data, error_2, message;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -226,7 +226,8 @@ function fetchRecipeDetails(id) {
                     return [3 /*break*/, 6];
                 case 4:
                     error_2 = _a.sent();
-                    modalDataContainer.innerHTML = "<p>Error fetching details ".concat(error_2.message, "</p>");
+                    message = error_2 instanceof Error ? error_2.message : String(error_2);
+                    modalDataContainer.innerHTML = "<p>Error fetching details: ".concat(message, "</p>");
                     return [3 /*break*/, 6];
                 case 5:
                     modalLoader.classList.add('hidden');
