@@ -21,6 +21,19 @@ header p {
     font-size: 1.1rem;
     color: #4f4e4e;
 }
+.filter-container {
+    display: flex;
+    gap: 10px;
+    flex-grow: 1;
+}
+.filter-container select {
+    padding: 12px;
+    font-size: 1rem;
+    border: 2px solid #ccc9c9;
+    border-radius: 8px;
+    background-color: white;
+    flex-grow: 1;
+}
 #search-form {
     display: flex;
     gap: 10px;
