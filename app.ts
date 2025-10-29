@@ -159,10 +159,9 @@ function displayRecipes(recipes: Recipe[]): void {
             <img src="${recipe.image}" alt="${recipe.title}" class="recipe-image">
             <div class="recipe-content">
                 <h3 class="recipe-title">${recipe.title}</h3>
-                <div class="recipe-summary">
-                    ${recipe.summary.substring(0, 150)}...
-                </div>
-                <a href="${recipe.sourceUrl}" target="_blank" rel="noopener noreferrer" class="recipe-link">View Recipe</a>
+                <button class="view-details-button" data-id="${recipe.id}">
+                    View Details
+                </button>
             </div>
             `;
         resultsContainer.appendChild(card);
