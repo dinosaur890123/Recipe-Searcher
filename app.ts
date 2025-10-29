@@ -192,7 +192,8 @@ async function fetchRecipeDetails(id: string): Promise<void> {
         const data: RecipeDetails = await response.json();
         displayRecipeDetails(data);
     } catch (error) {
-        modalDataContainer.innerHTML = `<p>Error fetching details ${error.message}</p>`;
+        const message = error instanceof Error ? error.message : String(error);
+        modalDataContainer.innerHTML = `<p>Error fetching details: ${message}</p>`;
     } finally {
         modalLoader.classList.add('hidden');
     }
