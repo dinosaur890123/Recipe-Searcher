@@ -1,5 +1,6 @@
 var API_KEY = 'b0cad93a1b1b4b4fb64f8c6a6c046211';
 var RESULTS_PER_PAGE = 10;
+var FAVOURITES_KEY = 'recipeFavourites';
 var currentQuery = '';
 var currentDiet = '';
 var currentCuisine = '';
@@ -19,6 +20,7 @@ var modalBackdrop = document.getElementById('modal-backdrop');
 var modalCloseButton = document.getElementById('modal-close-button');
 var modalLoader = document.getElementById('modal-loader');
 var modalDataContainer = document.getElementById('modal-data-container');
+var myFavouritesButton = document.getElementById('my-favourites-button');
 if (searchForm) {
     searchForm.addEventListener('submit', handleNewSearch);
 }
@@ -30,6 +32,12 @@ if (loadMoreButton) {
 }
 else {
     console.error('Load more button not found');
+}
+if (myFavouritesButton) {
+    myFavouritesButton.addEventListener('click', handleShowFavourites);
+}
+else {
+    console.error('Favourites button not found');
 }
 if (modalCloseButton) {
     modalCloseButton.addEventListener('click', closeModal);
@@ -46,7 +54,47 @@ if (resultsContainer) {
                 fetchRecipeDetails(recipeId);
             }
         }
+        if (target.classList.contains('save-favourite-button')) {
+            var recipeId = target.dataset.id;
+            if (recipeId) {
+                handleToggleFavourite(recipeId, target);
+            }
+        }
     });
+}
+function getFavourites() {
+    var favouritesJson = localStorage.getItem(FAVOURITES_KEY);
+    if (favouritesJson) {
+        try {
+            return JSON.parse(favouritesJson);
+        }
+        catch (error) {
+            console.error('Error getting favourites from localStorage:', error);
+            return [];
+        }
+    }
+    return [];
+}
+function saveFavourites(favourites) {
+    localStorage.setItem(FAVOURITES_KEY, JSON.stringify(favourites));
+}
+function handleToggleFavourite(id, buttonElement) {
+    var recipeId = parseInt(id, 10);
+    if (isNaN(recipeId))
+        return;
+    var favourites = getFavourites();
+    var button = buttonElement;
+    if (favourites.indexOf(recipeId) !== -1) {
+        favourites = favourites.filter(function (favId) { return favId !== recipeId; });
+        button.textContent = 'Save to favourites';
+        button.classList.remove('saved');
+    }
+    else {
+        favourites.push(recipeId);
+        button.textContent = 'Saved!';
+        button.classList.add('saved');
+    }
+    saveFavourites(favourites);
 }
 function handleLoadMore() {
     currentOffset += RESULTS_PER_PAGE;
@@ -127,6 +175,45 @@ function fetchRecipes() {
             loadMoreButton.disabled = false;
             loadMoreButton.textContent = 'Load More';
             loadingSpinner.classList.add('hidden');
+        }
+    });
+}
+function handleShowFavourites() {
+    if (!resultsContainer || !loadMoreButton || !errorMessage || !loadingSpinner) {
+        console.error('Elements missing, cannot show favourites.');
+        return;
+    }
+    var favourites = getFavourites();
+    resultsContainer.innerHTML = '';
+    loadMoreButton.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+    if (favourites.length === 0) {
+        resultsContainer.innerHTML = '<p>You have no saved favourites yet. Find a recipe and click "Save to Favuorites" to add one</p>';
+        return;
+    }
+    loadingSpinner.classList.remove('hidden');
+    var ids = favourites.join(',');
+    var apiUrl = "https://api.spoonacular.com/recipes/informationBulk?ids=".concat(ids, "&apiKey=").concat(API_KEY);
+    fetch(apiUrl)
+        .then(function (response) {
+        if (!response.ok) {
+            throw new Error("Error ".concat(response.status));
+        }
+        return response.json();
+    })
+        .then(function (data) {
+        currentOffset = 0;
+        totalResults = data.length;
+        displayRecipes(data);
+        loadingSpinner.classList.add('hidden');
+    })
+        .catch(function (error) {
+        console.error('Error fetching favourites:', error);
+        loadingSpinner.classList.add('hidden');
+        if (errorMessage) {
+            var message = error instanceof Error ? error.message : String(error);
+            errorMessage.textContent = "Error fetching favourites: ".concat(message);
+            errorMessage.classList.remove('hidden');
         }
     });
 }

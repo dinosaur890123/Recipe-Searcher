@@ -112,9 +112,9 @@ function handleToggleFavourite(id: string, buttonElement: HTMLElement): void {
     if (isNaN(recipeId)) return;
     let favourites = getFavourites();
     const button = buttonElement as HTMLButtonElement;
-    if (favourites.includes(recipeId)) {
+    if (favourites.indexOf(recipeId) !== -1) {
         favourites = favourites.filter(favId => favId !== recipeId);
-        button.textContent = 'Save to favouriyes';
+        button.textContent = 'Save to favourites';
         button.classList.remove('saved');
     } else {
         favourites.push(recipeId);

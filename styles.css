@@ -1,7 +1,18 @@
+:root {
+    --primary-color: #408ee7;
+    --primary-hover: #2e6ead;
+    --secondary-color: #f0a62d;
+    --secondary-hover: #cf902c;
+    --background-color: #ffffff;
+    --card-background: #ffffff;
+    --text-color: #383667;
+    --border-color: #e0e0e0;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.067);
+}
 body {
     font-family: Verdana, Geneva, Tahoma, sans-serif;
-    background-color: #f4f4f9;
-    color: #363535;
+    background-color: var(--background-color);
+    color: var(--text-color);
     margin: 0;
     padding: 20px;
 }
@@ -68,10 +79,13 @@ header p {
     display: none;
 }
 #loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
 }
 .loader {
     border: 4px solid #f3f3f3;
@@ -90,6 +104,8 @@ header p {
     border: 1px solid #f5c6cb;
     color: #721c24;
     padding: 15px;
+    border-radius: 8px;
+    text-align: center;
 }
 #results-container {
     display: grid;
@@ -160,20 +176,13 @@ header p {
     background-color: #b1aaaa;
     cursor: not-allowed;
 }
-.view-details-button {
-    display: block;
+.view-details-button, .save-favourite-button{
     width: 100%;
     padding: 10px;
-    margin-top: 15px;
-    text-align: center;
-    text-decoration: none;
-    font-weight: bold;
-    color: white;
-    background-color: #007bff;
-    border: none;
-    border-radius: 5px;
+    font-weight: 500;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 .view-details-button:hover {
     background-color: #0056b3;
@@ -246,4 +255,25 @@ header p {
 }
 #modal-loader {
     margin: 41px auto;
+}
+#my-favourites-button {
+    background-color: var(--secondary-color);
+}
+#my-favourites-button:hover {
+    background-color: var(--secondary-hover);
+}
+.save-favourite-button {
+    background-color: #eae6e6;
+    color: var(--text-color);
+    border: none;
+}
+.save-favourite-button:hover {
+    background-color: #413e3e;
+}
+.save-favourite-button.saved {
+    background-color: var(--secondary-color);
+    color: white;
+}
+.save-favourite-button.saved:hover {
+    background-color: var(--secondary-hover);
 }
