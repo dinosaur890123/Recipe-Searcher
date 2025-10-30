@@ -33,6 +33,7 @@ interface RecipeDetails {
 }
 const API_KEY = 'b0cad93a1b1b4b4fb64f8c6a6c046211';
 const RESULTS_PER_PAGE = 10;
+const FAVOURITES_KEY = 'recipeFavourites';
 let currentQuery: string = '';
 let currentDiet: string = '';
 let currentCuisine: string = '';
@@ -52,6 +53,7 @@ const modalBackdrop = document.getElementById('modal-backdrop') as HTMLDivElemen
 const modalCloseButton = document.getElementById('modal-close-button') as HTMLButtonElement | null;
 const modalLoader = document.getElementById('modal-loader') as HTMLDivElement | null;
 const modalDataContainer = document.getElementById('modal-data-container') as HTMLDivElement | null;
+const myFavouritesButton = document.getElementById('my-favourites-button') as HTMLButtonElement | null;
 if (searchForm) {
     searchForm.addEventListener('submit', handleNewSearch);
 } else {
@@ -61,6 +63,11 @@ if (loadMoreButton) {
     loadMoreButton.addEventListener('click', handleLoadMore);
 } else {
     console.error('Load more button not found');
+}
+if (myFavouritesButton) {
+    myFavouritesButton.addEventListener('click', handleShowFavourites);
+} else {
+    console.error('Favourites button not found');
 }
 if (modalCloseButton) {
     modalCloseButton.addEventListener('click', closeModal);
@@ -77,7 +84,28 @@ if (resultsContainer) {
                 fetchRecipeDetails(recipeId);
             }
         }
+        if (target.classList.contains('save-favourite-button')) {
+            const recipeId = target.dataset.id;
+            if (recipeId) {
+                handleToggleFavourite(recipeId, target);
+            }
+        }
     });
+}
+function getFavourites(): number[] {
+    const favouritesJson = localStorage.getItem(FAVOURITES_KEY);
+    if (favouritesJson) {
+        try {
+            return JSON.parse(favouritesJson) as number[];
+        } catch (error) {
+            console.error('Error parsing favorites from localStorage:', error);
+            return [];
+        }
+    }
+    return [];
+}
+function saveFavourites(favourites: number[]): void {
+    localStorage.setItem(FAVOURITES_KEY, JSON.stringify(favourites));
 }
 function handleLoadMore(): void {
     currentOffset += RESULTS_PER_PAGE;
