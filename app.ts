@@ -99,7 +99,7 @@ function handleNewSearch(e: Event): void {
     if (!currentQuery) return;
     fetchRecipes();
 }
-async function fetchRecipes(): Promise<void> {
+function fetchRecipes(): void {
     if (!searchButton || !loadMoreButton || !errorMessage || !loadingSpinner) { // what i still don't understand is without this bit, the rest of the code has errors
         console.error("Some elements are missing");
         return;
@@ -111,41 +111,53 @@ async function fetchRecipes(): Promise<void> {
     if (currentOffset === 0) {
         loadingSpinner.classList.remove('hidden');
     }
-    try {
-        let apiUrl = `https://api.spoonacular.com/recipes/complexSearch?query=${currentQuery}&apiKey=${API_KEY}&addRecipeInformation=true&number=${RESULTS_PER_PAGE}&offset=${currentOffset}`;
-        if (currentDiet) {
-            apiUrl += `&diet=${currentDiet}`;
-        }
-        if (currentCuisine) {
-            apiUrl += `&cuisine=${currentCuisine}`;
-        }
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data: SpoonacularSearchResponse = await response.json();
-        totalResults = data.totalResults;
-        displayRecipes(data.results);
-        if (currentOffset + RESULTS_PER_PAGE < totalResults) {
-            loadMoreButton.classList.remove('hidden');
-        } else {
-            loadMoreButton.classList.add('hidden');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        if (error instanceof Error) {
-            errorMessage.textContent = `Error: ${error.message}. Please try again.`;
-        } else {
-            errorMessage.textContent = 'An unknown error occurred. Please try again.';
-        }
-        errorMessage.classList.remove('hidden');
-        } finally {
-        searchButton.disabled = false;
-        loadMoreButton.disabled = false;
-        loadMoreButton.textContent = 'Load More';
-        loadingSpinner.classList.add('hidden');
-        }
+    let apiUrl = `https://api.spoonacular.com/recipes/complexSearch?query=${currentQuery}&apiKey=${API_KEY}&addRecipeInformation=true&number=${RESULTS_PER_PAGE}&offset=${currentOffset}`;
+    if (currentDiet) {
+        apiUrl += `&diet=${currentDiet}`;
     }
+    if (currentCuisine) {
+        apiUrl += `&cuisine=${currentCuisine}`;
+    }
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json() as Promise<SpoonacularSearchResponse>;
+        })
+        .then(data => {
+            totalResults = data.totalResults;
+            displayRecipes(data.results);
+            if (currentOffset + RESULTS_PER_PAGE < totalResults) {
+                loadMoreButton.classList.remove('hidden');
+            } else {
+                loadMoreButton.classList.add('hidden');
+            }
+            if (searchButton && loadMoreButton && loadingSpinner) {
+                searchButton.disabled = false;
+                loadMoreButton.disabled = false;
+                loadMoreButton.textContent = 'Load More';
+                loadingSpinner.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (errorMessage) {
+                if (error instanceof Error) {
+                    errorMessage.textContent = `Error: ${error.message}. Please try again.`;
+                } else {
+                    errorMessage.textContent = 'Please try again.';
+                }
+                errorMessage.classList.remove('hidden');
+            }
+            if (searchButton && loadMoreButton && loadingSpinner) {
+                searchButton.disabled = false;
+                loadMoreButton.disabled = false;
+                loadMoreButton.textContent = 'Load More';
+                loadingSpinner.classList.add('hidden');
+            }
+        });
+}
 function displayRecipes(recipes: Recipe[]): void {
     if (!resultsContainer) return;
     if (recipes.length === 0 && currentOffset === 0) {
@@ -176,26 +188,35 @@ function closeModal(): void {
     recipeModal.classList.add('hidden');
     modalDataContainer.innerHTML = '';
 }
-async function fetchRecipeDetails(id: string): Promise<void> {
+function fetchRecipeDetails(id: string): void {
     if (!modalLoader || !modalDataContainer || !errorMessage) return;
     openModal();
     modalDataContainer.innerHTML = '';
     modalLoader.classList.remove('hidden');
     errorMessage.classList.add('hidden');
     const apiUrl = `https://api.spoonacular.com/recipes/${id}/information?apiKey=${API_KEY}`;
-    try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
-        }
-        const data: RecipeDetails = await response.json();
-        displayRecipeDetails(data);
-    } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        modalDataContainer.innerHTML = `<p>Error fetching details: ${message}</p>`;
-    } finally {
-        modalLoader.classList.add('hidden');
-    }
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            return response.json() as Promise<RecipeDetails>;
+        })
+        .then(data => {
+            displayRecipeDetails(data);
+            if (modalLoader) {
+                modalLoader.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            const message = error instanceof Error ? error.message : String(error);
+            if (modalDataContainer) {
+                modalDataContainer.innerHTML = `<p>Error fetching details: ${message}</p>`;
+            }
+            if (modalLoader) {
+                modalLoader.classList.add('hidden');
+            }
+        });
 }
 function displayRecipeDetails(data: RecipeDetails): void {
     if (!modalDataContainer) return;
@@ -219,5 +240,5 @@ function displayRecipeDetails(data: RecipeDetails): void {
         <ol>
             ${instructionsHtml || '<p>Instructions not available.</p>'}
         </ol>
-        `;
+    `;
 }
