@@ -98,7 +98,7 @@ function getFavourites(): number[] {
         try {
             return JSON.parse(favouritesJson) as number[];
         } catch (error) {
-            console.error('Error parsing favorites from localStorage:', error);
+            console.error('Error getting favourites from localStorage:', error);
             return [];
         }
     }
@@ -106,6 +106,22 @@ function getFavourites(): number[] {
 }
 function saveFavourites(favourites: number[]): void {
     localStorage.setItem(FAVOURITES_KEY, JSON.stringify(favourites));
+}
+function handleToggleFavourite(id: string, buttonElement: HTMLElement): void {
+    const recipeId = parseInt(id, 10);
+    if (isNaN(recipeId)) return;
+    let favourites = getFavourites();
+    const button = buttonElement as HTMLButtonElement;
+    if (favourites.includes(recipeId)) {
+        favourites = favourites.filter(favId => favId !== recipeId);
+        button.textContent = 'Save to favouriyes';
+        button.classList.remove('saved');
+    } else {
+        favourites.push(recipeId);
+        button.textContent = 'Saved!';
+        button.classList.add('saved');
+    }
+    saveFavourites(favourites);
 }
 function handleLoadMore(): void {
     currentOffset += RESULTS_PER_PAGE;
@@ -183,6 +199,45 @@ function fetchRecipes(): void {
                 loadMoreButton.disabled = false;
                 loadMoreButton.textContent = 'Load More';
                 loadingSpinner.classList.add('hidden');
+            }
+        });
+}
+function handleShowFavourites(): void {
+    if (!resultsContainer || !loadMoreButton || !errorMessage || !loadingSpinner) {
+        console.error('Elements missing, cannot show favourites.');
+        return;
+    }
+    const favourites = getFavourites();
+    resultsContainer.innerHTML = '';
+    loadMoreButton.classList.add('hidden');
+    errorMessage.classList.add('hidden');
+    if (favourites.length === 0) {
+        resultsContainer.innerHTML = '<p>You have no saved favourites yet. Find a recipe and click "Save to Favuorites" to add one</p>';
+        return;
+    }
+    loadingSpinner.classList.remove('hidden');
+    const ids = favourites.join(',');
+    const apiUrl = `https://api.spoonacular.com/recipes/informationBulk?ids=${ids}&apiKey=${API_KEY}`;
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}`);
+            }
+            return response.json() as Promise<Recipe[]>;
+        })
+        .then(data => {
+            currentOffset = 0;
+            totalResults = data.length;
+            displayRecipes(data);
+            loadingSpinner.classList.add('hidden');
+        })
+        .catch(error => {
+            console.error('Error fetching favourites:', error);
+            loadingSpinner.classList.add('hidden');
+            if (errorMessage) {
+                const message = error instanceof Error ? error.message : String(error);
+                errorMessage.textContent = `Error fetching favourites: ${message}`;
+                errorMessage.classList.remove('hidden');
             }
         });
 }
