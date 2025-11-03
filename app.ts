@@ -54,6 +54,7 @@ const modalCloseButton = document.getElementById('modal-close-button') as HTMLBu
 const modalLoader = document.getElementById('modal-loader') as HTMLDivElement | null;
 const modalDataContainer = document.getElementById('modal-data-container') as HTMLDivElement | null;
 const myFavouritesButton = document.getElementById('my-favourites-button') as HTMLButtonElement | null;
+const randomRecipeButton = document.getElementById('random-recipe-button') as HTMLButtonElement | null;
 if (searchForm) {
     searchForm.addEventListener('submit', handleNewSearch);
 } else {
@@ -74,6 +75,11 @@ if (modalCloseButton) {
 }
 if (modalBackdrop) {
     modalBackdrop.addEventListener('click', closeModal);
+}
+if (randomRecipeButton) {
+    randomRecipeButton.addEventListener('click', handleGetRandomRecipe);
+} else {
+    console.error('Random recipe button not found');
 }
 if (resultsContainer) {
     resultsContainer.addEventListener('click', (e: Event) => {
@@ -122,6 +128,41 @@ function handleToggleFavourite(id: string, buttonElement: HTMLElement): void {
         button.classList.add('saved');
     }
     saveFavourites(favourites);
+}
+function handleGetRandomRecipe(): void {
+    if (!modalLoader || !modalDataContainer) {
+        console.error('Elements not found, cannot get random recipe.');
+        return;
+    }
+    openModal();
+    modalDataContainer.innerHTML = '';
+    const apiUrl = `https://api.spoonacular.com/recipes/random?apiKey=${API_KEY}`;
+    fetch(apiUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}`);
+            }
+            return response.json() as Promise<{recipes: RecipeDetails[]}>;
+        })
+        .then(data => {
+            if (data.recipes && data.recipes.length > 0) {
+                displayRecipeDetails(data.recipes[0]);
+            } else {
+                throw new Error('No random recipe found');
+            }
+            if (modalLoader) {
+                modalLoader.classList.add('hidden');
+            }
+        })
+        .catch(error => {
+            const message = error instanceof Error ? error.message : String(error);
+            if (modalDataContainer) {
+                modalDataContainer.innerHTML = `<p>Error fetching random recipe: ${message}</p>`;
+            }
+            if (modalLoader) {
+                modalLoader.classList.add('hidden');
+            }
+        })
 }
 function handleLoadMore(): void {
     currentOffset += RESULTS_PER_PAGE;
@@ -306,7 +347,7 @@ function displayRecipeDetails(data: RecipeDetails): void {
     const ingredientsHtml = data.extendedIngredients
         .map(ingredient => `<li>${ingredient.original}</li>`)
         .join('');
-    const instructionSteps = data.analysedInstructions[0]?.steps || [];
+    const instructionSteps = data.analysedInstructions?.[0]?.steps || [];
     const instructionsHtml = instructionSteps
         .map(step => `<li>${step.step}</li>`)
         .join('');
