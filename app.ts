@@ -347,10 +347,14 @@ function displayRecipeDetails(data: RecipeDetails): void {
     const ingredientsHtml = data.extendedIngredients
         .map(ingredient => `<li>${ingredient.original}</li>`)
         .join('');
-    const instructionSteps = (data.analysedInstructions && data.analysedInstructions.length > 0) ? data.analysedInstructions[0].steps : [];
-    const instructionsHtml = instructionSteps
-        .map(step => `<li>${step.step}</li>`)
-        .join('');
+
+    let instructionsHtml = '<p>Instructions not available.</p>';
+    if (data.analysedInstructions && data.analysedInstructions.length > 0 && data.analysedInstructions[0].steps) {
+        instructionsHtml = data.analysedInstructions[0].steps
+            .map(step => `<li>${step.step}</li>`)
+            .join('');
+    }
+
     modalDataContainer.innerHTML = `
         <h2>${data.title}</h2>
         <img src="${data.image}" alt="${data.title}">
@@ -362,7 +366,7 @@ function displayRecipeDetails(data: RecipeDetails): void {
         </ul>
         <h3>Instructions</h3>
         <ol>
-            ${instructionsHtml || '<p>Instructions not available.</p>'}
+            ${instructionsHtml}
         </ol>
     `;
 }

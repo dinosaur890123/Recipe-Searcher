@@ -21,6 +21,7 @@ var modalCloseButton = document.getElementById('modal-close-button');
 var modalLoader = document.getElementById('modal-loader');
 var modalDataContainer = document.getElementById('modal-data-container');
 var myFavouritesButton = document.getElementById('my-favourites-button');
+var randomRecipeButton = document.getElementById('random-recipe-button');
 if (searchForm) {
     searchForm.addEventListener('submit', handleNewSearch);
 }
@@ -44,6 +45,12 @@ if (modalCloseButton) {
 }
 if (modalBackdrop) {
     modalBackdrop.addEventListener('click', closeModal);
+}
+if (randomRecipeButton) {
+    randomRecipeButton.addEventListener('click', handleGetRandomRecipe);
+}
+else {
+    console.error('Random recipe button not found');
 }
 if (resultsContainer) {
     resultsContainer.addEventListener('click', function (e) {
@@ -95,6 +102,42 @@ function handleToggleFavourite(id, buttonElement) {
         button.classList.add('saved');
     }
     saveFavourites(favourites);
+}
+function handleGetRandomRecipe() {
+    if (!modalLoader || !modalDataContainer) {
+        console.error('Elements not found, cannot get random recipe.');
+        return;
+    }
+    openModal();
+    modalDataContainer.innerHTML = '';
+    var apiUrl = "https://api.spoonacular.com/recipes/random?apiKey=".concat(API_KEY);
+    fetch(apiUrl)
+        .then(function (response) {
+        if (!response.ok) {
+            throw new Error("Error ".concat(response.status));
+        }
+        return response.json();
+    })
+        .then(function (data) {
+        if (data.recipes && data.recipes.length > 0) {
+            displayRecipeDetails(data.recipes[0]);
+        }
+        else {
+            throw new Error('No random recipe found');
+        }
+        if (modalLoader) {
+            modalLoader.classList.add('hidden');
+        }
+    })
+        .catch(function (error) {
+        var message = error instanceof Error ? error.message : String(error);
+        if (modalDataContainer) {
+            modalDataContainer.innerHTML = "<p>Error fetching random recipe: ".concat(message, "</p>");
+        }
+        if (modalLoader) {
+            modalLoader.classList.add('hidden');
+        }
+    });
 }
 function handleLoadMore() {
     currentOffset += RESULTS_PER_PAGE;
@@ -274,15 +317,16 @@ function fetchRecipeDetails(id) {
     });
 }
 function displayRecipeDetails(data) {
-    var _a;
     if (!modalDataContainer)
         return;
     var ingredientsHtml = data.extendedIngredients
         .map(function (ingredient) { return "<li>".concat(ingredient.original, "</li>"); })
         .join('');
-    var instructionSteps = ((_a = data.analysedInstructions[0]) === null || _a === void 0 ? void 0 : _a.steps) || [];
-    var instructionsHtml = instructionSteps
-        .map(function (step) { return "<li>".concat(step.step, "</li>"); })
-        .join('');
-    modalDataContainer.innerHTML = "\n        <h2>".concat(data.title, "</h2>\n        <img src=\"").concat(data.image, "\" alt=\"").concat(data.title, "\">\n        <h3>Summary</h3>\n        <div>").concat(data.summary, "</div>\n        <h3>Ingredients</h3>\n        <ul>\n            ").concat(ingredientsHtml, "\n        </ul>\n        <h3>Instructions</h3>\n        <ol>\n            ").concat(instructionsHtml || '<p>Instructions not available.</p>', "\n        </ol>\n    ");
+    var instructionsHtml = '<p>Instructions not available.</p>';
+    if (data.analysedInstructions && data.analysedInstructions.length > 0 && data.analysedInstructions[0].steps) {
+        instructionsHtml = data.analysedInstructions[0].steps
+            .map(function (step) { return "<li>".concat(step.step, "</li>"); })
+            .join('');
+    }
+    modalDataContainer.innerHTML = "\n        <h2>".concat(data.title, "</h2>\n        <img src=\"").concat(data.image, "\" alt=\"").concat(data.title, "\">\n        <h3>Summary</h3>\n        <div>").concat(data.summary, "</div>\n        <h3>Ingredients</h3>\n        <ul>\n            ").concat(ingredientsHtml, "\n        </ul>\n        <h3>Instructions</h3>\n        <ol>\n            ").concat(instructionsHtml, "\n        </ol>\n    ");
 }
