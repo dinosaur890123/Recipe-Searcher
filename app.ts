@@ -347,7 +347,7 @@ function displayRecipeDetails(data: RecipeDetails): void {
     const ingredientsHtml = data.extendedIngredients
         .map(ingredient => `<li>${ingredient.original}</li>`)
         .join('');
-    const instructionSteps = data.analysedInstructions?.[0]?.steps || [];
+    const instructionSteps = (data.analysedInstructions && data.analysedInstructions.length > 0) ? data.analysedInstructions[0].steps : [];
     const instructionsHtml = instructionSteps
         .map(step => `<li>${step.step}</li>`)
         .join('');
